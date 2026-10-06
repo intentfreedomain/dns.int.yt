@@ -1,207 +1,156 @@
-import Reveal from '../components/Reveal'
-import Seo from '../components/Seo'
-
-const PLANS = [
-  {
-    name: 'Free',
-    price: '$0',
-    period: 'forever',
-    tagline: 'For personal projects and side builds',
-    domains: '20 domain slots',
-    records: '1,000 DNS records / domain',
-    features: [
-      'Full REST API access',
-      'All record types incl. ALIAS',
-      'dns1 & dns2 anycast nameservers',
-      'Dashboard + API management',
-    ],
-    cta: 'Start for free',
-    href: 'https://panel.dns.int.yt/?page=signup',
-    highlight: false,
-  },
-  {
-    name: 'Paid',
-    price: '$1',
-    period: '/month',
-    tagline: 'For freelancers managing client domains',
-    domains: '100 domain slots',
-    records: '1,000 DNS records / domain',
-    features: [
-      'Everything in Free',
-      '5x the domain capacity',
-      'Priority support in Discord',
-      'Same anycast infrastructure',
-    ],
-    cta: 'Get in touch',
-    href: '#buy',
-    highlight: true,
-  },
-  {
-    name: 'Unlimited',
-    price: '$4',
-    period: '/month',
-    tagline: 'For agencies and platforms at scale',
-    domains: 'Unlimited domain slots',
-    records: 'Unlimited DNS records',
-    features: [
-      'Everything in Paid',
-      'No domain or record ceiling',
-      'Built for reseller workloads',
-      'Priority support in Discord',
-    ],
-    cta: 'Get in touch',
-    href: '#buy',
-    highlight: false,
-  },
-]
+import Seo from '../components/Seo.jsx'
+import Icon from '../components/Icon.jsx'
+import { useReveal } from '../hooks/useReveal.js'
+import { DISCORD_URL, ORG } from '../data/site.js'
+import { PLANS, MATRIX_ROWS, formatPrice, formatDomains, formatRecords } from '../data/plans.js'
+import { recordCount } from '../data/records.js'
 
 export default function Pricing() {
+  const [gridRef, gridRevealed] = useReveal()
+  const [buyRef, buyRevealed] = useReveal()
+  const [matrixRef, matrixRevealed] = useReveal()
+
   return (
     <>
-      <Seo
-        title="Pricing"
-        description="Free plan: 20 domains, 1,000 DNS records each. Paid plan $1/mo for 100 domains. Unlimited plan $4/mo for unlimited domains and records. No feature walls."
-        keywords="DNS pricing, free DNS plan, cheap DNS hosting, DNS record limits"
-        path="/pricing"
-      />
+      <Seo path="/pricing" />
+
       <section className="page-hero">
         <div className="container">
-          <Reveal>
-            <div className="pill pill--blue"><span className="pill-dot" /> Simple, honest pricing</div>
-            <h1>Pricing that doesn't punish growth</h1>
-            <p className="page-hero__sub">
-              Every tier — including free — gets 1,000 DNS records per domain. You're
-              only ever paying for more domain slots, never for features held hostage.
-            </p>
-          </Reveal>
+          <h1>Pricing that doesn’t punish growth</h1>
+          <p className="page-hero__sub">
+            Every plan gets the same anycast infrastructure, the same REST API and the same{' '}
+            {recordCount} record types. Only the number of zones changes — there is no record
+            ceiling worth upselling past.
+          </p>
         </div>
       </section>
 
-      <section className="section--tight">
+      <section
+        ref={gridRef}
+        className={`section--tight reveal-group ${gridRevealed ? 'is-revealed' : ''}`}
+      >
         <div className="container">
           <div className="pricing-grid">
-            {PLANS.map((p, i) => (
-              <Reveal key={p.name} delay={i * 90}>
-                <div className={`plan-card card ${p.highlight ? 'is-highlight' : ''}`}>
-                  {p.highlight && <div className="plan-card__badge">Most popular</div>}
-                  <h3>{p.name}</h3>
-                  <p className="plan-card__tagline">{p.tagline}</p>
-                  <div className="plan-card__price">
-                    <span className="plan-card__price-num">{p.price}</span>
-                    <span className="plan-card__price-period">{p.period}</span>
-                  </div>
-
-                  <div className="plan-card__limits">
-                    <div><i className="fa-solid fa-globe" /> {p.domains}</div>
-                    <div><i className="fa-solid fa-layer-group" /> {p.records}</div>
-                  </div>
-
-                  <ul className="plan-card__features">
-                    {p.features.map(f => (
-                      <li key={f}><i className="fa-solid fa-check" /> {f}</li>
-                    ))}
-                  </ul>
-
-                  <a
-                    href={p.href}
-                    className={`btn btn--block ${p.highlight ? 'btn--gold' : 'btn--ghost'}`}
-                    {...(p.href.startsWith('http') ? { target: '_self' } : {})}
-                  >
-                    {p.cta}
-                  </a>
+            {PLANS.map((plan) => (
+              <div
+                key={plan.id}
+                className={`plan-card card ${plan.highlight ? 'is-highlight' : ''}`}
+              >
+                {plan.highlight && <div className="plan-card__badge">Start here</div>}
+                <h2>{plan.name}</h2>
+                <p className="plan-card__tagline">{plan.tagline}</p>
+                <div className="plan-card__price">
+                  <span className="plan-card__price-num">{formatPrice(plan.price)}</span>
+                  <span className="plan-card__price-period">{plan.period}</span>
                 </div>
-              </Reveal>
+
+                <div className="plan-card__limits">
+                  <div>
+                    <Icon name="globe" size={14} /> {formatDomains(plan.domains)} domain slots
+                  </div>
+                  <div>
+                    <Icon name="layer-group" size={14} /> {formatRecords(plan.recordsPerDomain)}
+                  </div>
+                </div>
+
+                <ul className="plan-card__features">
+                  {plan.features.map((f) => (
+                    <li key={f}>
+                      <Icon name="check" size={12} /> {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <a
+                  href={plan.href}
+                  className={`btn btn--block ${plan.highlight ? 'btn--primary' : 'btn--ghost'}`}
+                >
+                  {plan.cta}
+                </a>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ===== How to buy ===== */}
-      <section id="buy" className="section">
+      <section
+        ref={buyRef}
+        className={`section reveal-group ${buyRevealed ? 'is-revealed' : ''}`}
+        id="buy"
+      >
         <div className="container">
-          <Reveal>
-            <div className="buy-panel card">
-              <div className="buy-panel__icon"><i className="fa-solid fa-bag-shopping" /></div>
-              <h2>Want the Paid or Unlimited plan?</h2>
-              <p>
-                Upgrades are handled directly by the team — no automated checkout yet.
-                Join the Discord or email us and we'll get your account upgraded.
-              </p>
-              <div className="buy-panel__cta">
-                <a href="https://discord.gg/SZEYNP4qBc" target="_blank" rel="noreferrer" className="btn btn--primary">
-                  <i className="fa-brands fa-discord" /> Join Discord to upgrade
-                </a>
-                <a href="mailto:admin@int.yt" className="btn btn--ghost">
-                  <i className="fa-solid fa-envelope" /> admin@int.yt
-                </a>
-              </div>
+          <div className="buy-panel card">
+            <div className="buy-panel__icon">
+              <Icon name="bag-shopping" size={20} />
             </div>
-          </Reveal>
+            <h2>Contact us for Paid tiers</h2>
+            <p>
+              Paid tiers are switched on by hand. Message us with the plan you want and an admin
+              will move your account up.
+            </p>
+            <div className="buy-panel__cta">
+              <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="btn btn--primary">
+                <Icon name="discord" size={14} /> Contact us on Discord
+              </a>
+              <a href={`mailto:${ORG.email}`} className="btn btn--ghost">
+                <Icon name="envelope" size={14} /> {ORG.email}
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ===== Comparison table ===== */}
-      <section className="section--tight">
+      <section
+        ref={matrixRef}
+        className={`section--tight reveal-group ${matrixRevealed ? 'is-revealed' : ''}`}
+      >
         <div className="container">
-          <Reveal>
-            <div className="section-head">
-              <h2>Plan comparison</h2>
-              <p>Side by side, in full.</p>
-            </div>
-          </Reveal>
+          <div className="section-head">
+            <h2>Side by side</h2>
+          </div>
 
-          <Reveal>
-            <div className="table-wrap card">
-              <table className="compare-table">
-                <thead>
-                  <tr>
-                    <th>Feature</th>
-                    <th>Free</th>
-                    <th>Paid</th>
-                    <th>Unlimited</th>
+          <div className="table-wrap card">
+            <table className="compare-table">
+              <caption className="visually-hidden">
+                Feature comparison across the Free, Paid and Unlimited plans
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Feature</th>
+                  {PLANS.map((p) => (
+                    <th key={p.id} scope="col">
+                      {p.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {MATRIX_ROWS.map((row) => (
+                  <tr key={row.label}>
+                    <th scope="row">{row.label}</th>
+                    {row.values.map((value, i) => (
+                      <td key={PLANS[i].id}>
+                        {value === true ? (
+                          <>
+                            <Icon name="check" size={13} className="table-check" />
+                            <span className="visually-hidden">Included</span>
+                          </>
+                        ) : (
+                          value
+                        )}
+                      </td>
+                    ))}
                   </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Domain slots</td>
-                    <td>20</td>
-                    <td>100</td>
-                    <td>Unlimited</td>
-                  </tr>
-                  <tr>
-                    <td>DNS records per domain</td>
-                    <td>1,000</td>
-                    <td>1,000</td>
-                    <td>Unlimited</td>
-                  </tr>
-                  <tr>
-                    <td>REST API access</td>
-                    <td><i className="fa-solid fa-check table-check" /></td>
-                    <td><i className="fa-solid fa-check table-check" /></td>
-                    <td><i className="fa-solid fa-check table-check" /></td>
-                  </tr>
-                  <tr>
-                    <td>ALIAS record support</td>
-                    <td><i className="fa-solid fa-check table-check" /></td>
-                    <td><i className="fa-solid fa-check table-check" /></td>
-                    <td><i className="fa-solid fa-check table-check" /></td>
-                  </tr>
-                  <tr>
-                    <td>Anycast (dns1 / dns2)</td>
-                    <td><i className="fa-solid fa-check table-check" /></td>
-                    <td><i className="fa-solid fa-check table-check" /></td>
-                    <td><i className="fa-solid fa-check table-check" /></td>
-                  </tr>
-                  <tr>
-                    <td>Price</td>
-                    <td>$0</td>
-                    <td>$1 / mo</td>
-                    <td>$4 / mo</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </Reveal>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="pricing-note">
+            Record ceiling compared to other free plans: Cloudflare Free allows 200 records per
+            zone, Intent-DNS allows 1,000. Verified against Cloudflare’s DNS quota documentation,
+            October 2026.
+          </p>
         </div>
       </section>
     </>

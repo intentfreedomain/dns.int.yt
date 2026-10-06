@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Intent wordmark.
+
+  viewBox is cropped to the ink (60 86 696 182) rather than the 0 0 800 360 box
+  the paths were exported into. The original canvas was 56% empty padding, so
+  the wordmark rendered at half the height it was given — the same defect as the
+  old 512x512 PNG, where six letters inside a square canvas came out ~7px tall in
+  a 30px slot. Ink aspect here is 3.82, matching a tight render of the same
+  wordmark (3.79).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="696" height="182" viewBox="60 86 696 182" role="img" aria-label="Intent">
+  <title>Intent Logo</title>
+  <desc>Intent multicolor wordmark, converted to scalable vector paths.</desc>
+  <path d="M169 1493H516V0H169Z" fill="#36B9DA" transform="translate(39.41 265.00) scale(0.119629 -0.119629)"/>
+  <path d="M1168 682V0H844V111V522Q844 667 838.0 722.0Q832 777 818 803Q799 838 766.5 857.5Q734 877 693 877Q592 877 534.5 790.5Q477 704 477 551V0H155V1120H477V956Q550 1054 632.0 1100.5Q714 1147 813 1147Q987 1147 1077.5 1028.0Q1168 909 1168 682Z" fill="#E62B2F" transform="translate(114.36 265.00) scale(0.119629 -0.119629)"/>
+  <path d="M507 1438V1120H839V864H507V389Q507 311 534.5 283.5Q562 256 645 256H811V0H535Q344 0 264.0 88.5Q184 177 184 389V864H24V1120H184V1438Z" fill="#20B982" transform="translate(264.31 265.00) scale(0.119629 -0.119629)"/>
+  <path d="M1161 563V461H408Q419 335 489.5 272.0Q560 209 686 209Q788 209 894.5 242.5Q1001 276 1113 344V68Q999 20 884.5 -4.5Q770 -29 656 -29Q382 -29 230.5 125.5Q79 280 79 559Q79 833 228.0 990.0Q377 1147 638 1147Q876 1147 1018.5 988.0Q1161 829 1161 563ZM830 682Q830 784 776.5 846.5Q723 909 636 909Q543 909 484.5 850.5Q426 792 411 682Z" fill="#F2C338" transform="translate(362.70 265.00) scale(0.119629 -0.119629)"/>
+  <path d="M1168 682V0H844V111V522Q844 667 838.0 722.0Q832 777 818 803Q799 838 766.5 857.5Q734 877 693 877Q592 877 534.5 790.5Q477 704 477 551V0H155V1120H477V956Q550 1054 632.0 1100.5Q714 1147 813 1147Q987 1147 1077.5 1028.0Q1168 909 1168 682Z" fill="#6C5AC4" transform="translate(505.24 265.00) scale(0.119629 -0.119629)"/>
+  <path d="M507 1438V1120H839V864H507V389Q507 311 534.5 283.5Q562 256 645 256H811V0H535Q344 0 264.0 88.5Q184 177 184 389V864H24V1120H184V1438Z" fill="#E43B87" transform="translate(655.19 265.00) scale(0.119629 -0.119629)"/>
+</svg>

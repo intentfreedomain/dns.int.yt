@@ -1,700 +1,162 @@
-<div align="center">
+# Intent-DNS
 
-# ⚡ Intent-DNS
+Authoritative DNS hosting with apex ALIAS support and a REST API on every plan.
+This repository is the marketing site — the panel, API and DNS service are not
+part of it.
 
-### Developer-first authoritative DNS hosting.
+- Site: <https://dns.int.yt/>
+- Panel and API reference: <https://panel.dns.int.yt/>
 
-**Fast DNS management · Apex ALIAS · REST API · Generous limits · No unnecessary complexity**
+## What the service does
 
-[![Website](https://img.shields.io/badge/🌐_Website-dns.int.yt-111827?style=for-the-badge)](https://dns.int.yt/)
-[![Control Panel](https://img.shields.io/badge/⚙️_Control_Panel-panel.dns.int.yt-4f46e5?style=for-the-badge)](https://panel.dns.int.yt/)
-[![Discord](https://img.shields.io/badge/💬_Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/NCS96PS4MH)
+The one thing that distinguishes it: a CNAME cannot exist at the apex of a zone,
+because the apex is also the name in the zone's SOA and NS records. Hosting
+platforms hand you a hostname, and without apex support you are stuck with a
+subdomain or an A record pointing at an IP that changes.
 
-</div>
-
----
-
-<div align="center">
-
-> **DNS infrastructure without the usual artificial limits.**
->
-> Host your zones, manage records from a clean control panel, automate everything through the API, and use apex ALIAS records when your provider gives you a hostname instead of an IP.
-
-</div>
-
----
-
-## ✨ Why Intent-DNS?
-
-Most DNS hosting platforms are designed around simple record editing. Intent-DNS is designed with **developers and infrastructure workflows** in mind.
-
-| | Intent-DNS |
-|---|---|
-| 🌐 Authoritative DNS | **PowerDNS-based** |
-| ⚡ Apex ALIAS | **Yes** |
-| 🔌 REST API | **API v1** |
-| 📦 Free plan | **20 domains × 1,000 records/domain** |
-| 💳 Paid plan | **100 domains × 1,000 records/domain — $1** |
-| ♾️ Unlimited plan | **Unlimited domains × unlimited records — $4** |
-| 🔍 DNS discovery | **Built in** |
-| 🔑 API authentication | **Bearer tokens** |
-| 🖥️ Web panel | **Included** |
-
----
-
-# 🚀 Get Started
-
-### 1. Create your account
-
-Open the Intent-DNS control panel:
-
-**https://panel.dns.int.yt/**
-
-Create an account and start with the Free plan.
-
-### 2. Add your domain
-
-From the dashboard, add a domain and configure its DNS records.
-
-You can either create records manually or use **DNS discovery/import** to find existing records.
-
-### 3. Delegate your domain
-
-Set your domain's authoritative nameservers to:
+An ALIAS record at the apex resolves like an A record while SOA and NS stay
+where they belong:
 
 ```text
-dns1.int.yt
-dns2.int.yt
+@   ALIAS   project.onrender.com.
+@   NS      dns1.int.yt.
+@   SOA     ns1.int.yt. hostmaster.int.yt. 1
 ```
 
-> Always use the exact nameservers shown by the Intent-DNS panel if your account displays different values.
+## Plans
 
-### 4. Verify DNS
+| | Free | Paid | Unlimited |
+|---|---|---|---|
+| Domain slots | 20 | 100 | Unlimited |
+| DNS records per domain | 1,000 | 1,000 | Unlimited |
+| REST API | Yes | Yes | Yes |
+| ALIAS | Yes | Yes | Yes |
+| Anycast nameservers | Yes | Yes | Yes |
+| Price | $0 | $1/mo | $4/mo |
+
+Paid tiers are enabled by hand — message an admin on Discord or by email.
+For comparison, Cloudflare Free allows 200 records per zone (checked against
+Cloudflare's DNS quota documentation, October 2026).
+
+## Record types
+
+`A` `AAAA` `ALIAS` `CNAME` `MX` `TXT` `SRV` `NS` `CAA`
+
+ALIAS is rejected alongside `A`, `AAAA`, `CNAME` or a second ALIAS at the same
+owner name. `NS`, `SOA`, `MX`, `TXT`, `SRV` and `CAA` are accepted there.
+
+## Nameservers
+
+Delegate to `dns1.int.yt` and `dns2.int.yt`.
+
+Both names resolve to the same address, `192.255.149.52`, which is what makes
+them anycast: one address announced from more than one network is answered by
+whichever network the querier reaches first, so there is no fixed latency
+penalty for being far from the origin. A unicast design would need two distinct
+addresses.
+
+Verify it yourself:
 
 ```bash
-dig example.com
-dig @dns1.int.yt example.com
-dig @dns2.int.yt example.com
+dig +short dns1.int.yt @1.1.1.1
+dig +short dns2.int.yt @1.1.1.1
 ```
 
----
+Authoritative answers come from PowerDNS Authoritative; a PowerDNS Recursor
+handles ALIAS flattening and the lookups behind it.
 
-# 💰 Plans
-
-Choose the amount of DNS infrastructure you actually need.
-
-<table>
-<tr>
-<td width="33%" valign="top">
-
-### 🆓 Free
-
-## $0
-
-**20 domains**
-
-**1,000 records / domain**
-
-- Authoritative DNS
-- Web control panel
-- DNS management
-- API access according to account settings
-- No payment card required
-
-**[Start for free →](https://panel.dns.int.yt/)**
-
-</td>
-<td width="33%" valign="top">
-
-### 💎 Paid
-
-## $1
-
-**100 domains**
-
-**1,000 records / domain**
-
-- Everything needed for larger projects
-- More domain slots
-- Authoritative DNS
-- Web control panel
-- API access according to account settings
-
-**Contact us →** admin@int.yt
-
-</td>
-<td width="33%" valign="top">
-
-### ♾️ Unlimited
-
-## $4
-
-**Unlimited domains**
-
-**Unlimited records**
-
-- Designed for large DNS workloads
-- No domain-slot limit
-- No record limit
-- Authoritative DNS
-- Web control panel
-- API access according to account settings
-
-**Contact us →** admin@int.yt
-
-</td>
-</tr>
-</table>
-
-### 💬 Purchase & Support
-
-**Email:** admin@int.yt
-
-**Discord:** https://discord.gg/NCS96PS4MH
-
-Discord is recommended for faster replies.
-
----
-
-# 🔗 Apex ALIAS
-
-One of the core Intent-DNS features is **apex/root-domain ALIAS support**.
-
-Normally, DNS does not allow a standard CNAME at the zone apex:
+## REST API
 
 ```text
-example.com → CNAME → service.example.com
+https://dns.int.yt/api/v1
 ```
 
-Intent-DNS supports:
-
-```text
-@ → ALIAS → service.example.com.
-```
-
-This is particularly useful when a hosting platform gives you a hostname such as:
-
-```text
-your-project.provider.example
-```
-
-but you want:
-
-```text
-example.com
-```
-
-to point to it.
-
-### Example
-
-```text
-example.com
-     │
-     ▼
-@  ALIAS  your-project.onrender.com.
-     │
-     ▼
-Intent-DNS resolves the target
-     │
-     ▼
-Address response returned to the client
-```
-
-### ALIAS validation
-
-Intent-DNS protects zones from invalid ALIAS combinations, including:
-
-- ❌ ALIAS + A at the same owner name
-- ❌ ALIAS + AAAA at the same owner name
-- ❌ ALIAS + CNAME at the same owner name
-- ❌ Multiple ALIAS targets at the same owner name
-- ❌ Self-referential ALIAS targets
-
-Appropriate records such as **NS, SOA, MX, TXT, SRV and CAA** can coexist where valid.
-
----
-
-# 📋 Supported DNS Records
-
-```text
-┌─────────┬──────────────────────────────────────┐
-│ Type    │ Purpose                              │
-├─────────┼──────────────────────────────────────┤
-│ A       │ IPv4 address                         │
-│ AAAA    │ IPv6 address                         │
-│ CNAME   │ Canonical hostname                   │
-│ ALIAS   │ Apex hostname / DNS flattening       │
-│ MX      │ Mail exchange                        │
-│ TXT     │ Text / verification / policy data    │
-│ NS      │ Nameserver delegation                │
-│ SRV     │ Service discovery                    │
-│ CAA     │ Certificate authority policy         │
-└─────────┴──────────────────────────────────────┘
-```
-
-### Quick examples
-
-```dns
-@       A       203.0.113.10
-www     A       203.0.113.10
-
-@       ALIAS   service.example.com.
-
-@       MX      10 mail.example.com.
-@       TXT     "v=spf1 ..."
-
-_service._tcp    SRV    10 5 443 service.example.com.
-
-@       CAA     0 issue "letsencrypt.org"
-```
-
----
-
-# 🔌 REST API
-
-Automate your DNS infrastructure instead of clicking through a dashboard.
-
-Base API:
-
-```text
-https://dns.int.yt/api/v1/
-```
-
-Authentication uses **Bearer API tokens**.
-
-```http
-Authorization: Bearer idns_live_YOUR_TOKEN
-```
-
-## Authentication
-
-```http
-POST /api/v1/auth/token
-```
-
-## Account
-
-```http
-GET /api/v1/user
-```
-
-## Domains
-
-```http
-GET    /api/v1/domains
-POST   /api/v1/domains
-GET    /api/v1/domains/{id}
-DELETE /api/v1/domains/{id}
-```
-
-## Records
-
-```http
-GET    /api/v1/domains/{id}/records
-POST   /api/v1/domains/{id}/records
-PUT    /api/v1/domains/{id}/records/{record_id}
-DELETE /api/v1/domains/{id}/records/{record_id}
-```
-
-### Example
+Authenticate with `Authorization: Bearer <token>`.
 
 ```bash
 curl https://dns.int.yt/api/v1/domains \
-  -H "Authorization: Bearer idns_live_YOUR_TOKEN"
+  -H "Authorization: Bearer $IDNS_TOKEN"
 ```
 
-Create a record:
+| Method | Path | |
+|---|---|---|
+| `POST` | `/auth/token` | Exchange credentials for a token |
+| `GET` | `/user` | Account and plan limits |
+| `GET` `POST` | `/domains` | List / create zones |
+| `GET` `DELETE` | `/domains/{id}` | Read / delete a zone |
+| `GET` `POST` | `/domains/{id}/records` | List / create records |
+| `PUT` `DELETE` | `/domains/{id}/records/{record_id}` | Replace / delete a record |
+
+`https://panel.dns.int.yt/api-docs.php` is the authoritative reference for
+request and response shapes.
+
+## Developing the site
 
 ```bash
-curl -X POST \
-  https://dns.int.yt/api/v1/domains/DOMAIN_ID/records \
-  -H "Authorization: Bearer idns_live_YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "www",
-    "type": "A",
-    "content": "203.0.113.10"
-  }'
+npm ci
+npm run dev          # vite dev server
+npm run build        # client bundle -> SSR bundle -> prerender
+npm test             # vitest
+npm run lint         # eslint
+npm run format       # prettier
+node scripts/verify-build.mjs   # post-build assertions
 ```
 
-> Check the project's API documentation for the exact request and response schemas.
+`npm run build` does three things in order:
 
----
+1. `vite build` — client bundle into `dist/`
+2. `vite build --ssr` — a server bundle into `.ssr/`
+3. `scripts/prerender.mjs` — server-renders one static HTML file per route into
+   `dist/`, writes `dist/404.html` (the GitHub Pages SPA fallback) and
+   `dist/sitemap.xml`
 
-# 🔍 DNS Discovery & Import
+Pages are prerendered because the site's whole job is being found and read by
+things that do not run JavaScript. `src/components/Seo.jsx` only mirrors those
+tags on client-side navigation.
 
-Already have DNS records somewhere else?
+### Single source of truth
 
-Intent-DNS can discover existing records before creating a zone.
+Anything duplicated across pages, the sitemap, the JSON-LD or the README lives
+in `src/data/`:
 
-```text
-┌───────────────────┐
-│ Enter domain      │
-└─────────┬─────────┘
-          ▼
-┌───────────────────┐
-│ DNS discovery     │
-└─────────┬─────────┘
-          ▼
-┌───────────────────┐
-│ Review records    │
-└─────────┬─────────┘
-          ▼
-┌───────────────────┐
-│ Select records    │
-└─────────┬─────────┘
-          ▼
-┌───────────────────┐
-│ Create zone       │
-└─────────┬─────────┘
-          ▼
-┌───────────────────┐
-│ Sync to PowerDNS  │
-└───────────────────┘
-```
-
-This makes migration from an existing DNS provider significantly easier.
-
----
-
-# 🧠 Architecture
-
-Intent-DNS uses a PowerDNS-based authoritative DNS architecture.
-
-```text
-                         INTERNET
-                            │
-                 DNS queries / delegation
-                            │
-                            ▼
-                 ┌─────────────────────┐
-                 │     Intent-DNS      │
-                 │  Authoritative DNS  │
-                 └──────────┬──────────┘
-                            │
-                ┌───────────┴───────────┐
-                ▼                       ▼
-        ┌───────────────┐       ┌───────────────┐
-        │ dns1.int.yt   │       │ dns2.int.yt   │
-        └───────┬───────┘       └───────┬───────┘
-                │                       │
-                └───────────┬───────────┘
-                            ▼
-                 ┌─────────────────────┐
-                 │ PowerDNS Authoritative│
-                 └──────────┬──────────┘
-                            │
-                            ▼
-                 ┌─────────────────────┐
-                 │  PowerDNS Recursor  │
-                 │ ALIAS / flattening  │
-                 └─────────────────────┘
-```
-
-### Main infrastructure
-
-```text
-Nginx
-   │
-   ├── PHP-FPM
-   │      └── Intent-DNS application
-   │
-   └── HTTPS / web routing
-
-MariaDB
-   └── Users, domains, records, plans, audit data
-
-PowerDNS Authoritative
-   └── Authoritative DNS zones
-
-PowerDNS Recursor
-   └── Recursive resolution used by ALIAS handling
-```
-
----
-
-# 🔐 Security & Authorization
-
-Intent-DNS separates normal users, staff, and administrators.
-
-### 👤 User
-
-Users can manage:
-
-- Their own account
-- Their permitted domains
-- DNS records within their quotas
-- API keys where enabled
-
-### 🛠️ Staff
-
-Staff can manage normal customer resources according to their permissions.
-
-Staff cannot:
-
-- Access administrator-only functions
-- Create or modify administrator accounts
-- Grant paid/unlimited privileges
-- Change administrator-controlled quotas
-
-### 👑 Administrator
-
-Production administrator privileges are reserved for the designated administrator accounts.
-
-Administrators can manage:
-
-- Users
-- Staff
-- Domains
-- DNS records
-- Plans
-- Quotas
-- API access
-- Announcements
-- Administrative settings
-- Audit information
-
-Normal signup cannot create an administrator account.
-
----
-
-# 📊 Quotas
-
-The plan system separates **roles** from **plan capabilities**.
-
-```text
-Account role
-     │
-     ├── User
-     ├── Staff
-     └── Administrator
-
-Plan
-     │
-     ├── Free
-     ├── Paid
-     └── Unlimited
-```
-
-Resource controls include:
-
-```text
-max_domains
-max_records_per_domain
-api_enabled
-```
-
-This structure allows future billing/payment integrations without replacing the authorization model.
-
----
-
-# 🖥️ Control Panel
-
-The Intent-DNS panel provides a complete web interface for DNS management.
-
-### Included
-
-- 📊 Dashboard
-- 🌐 Domain management
-- 🧾 DNS record management
-- 🔍 DNS discovery/import
-- 👤 Profile management
-- 🔐 Password management
-- 🔑 API key management
-- 📚 API documentation
-- 🛠️ Staff portal
-- 👑 Administrator portal
-- 📢 Announcements
-- 📝 Audit information
-- 📈 Quota/plan information
-- 📱 Responsive navigation
-- ⚠️ Validation and error feedback
-- ✅ Success notifications
-- ⏳ Loading states
-
----
-
-# 🧪 Production Verification
-
-The production implementation includes testing around:
-
-### Authentication
-
-- User signup/login/logout
-- Password and session handling
-- CSRF protection
-- Administrator restrictions
-- Staff lifecycle
-- User/staff/admin authorization boundaries
-
-### API
-
-- API token generation
-- Authenticated API requests
-- Domain CRUD
-- DNS record CRUD
-
-### DNS
-
-- A
-- AAAA
-- CNAME
-- ALIAS
-- MX
-- TXT
-- SRV
-- CAA
-- Apex ALIAS resolution
-- PowerDNS synchronization
-- Authoritative DNS resolution
-
-### Discovery/import
-
-- DNS discovery
-- Discovery token handling
-- Record selection
-- Zone creation
-- Database persistence
-- PowerDNS synchronization
-- Real DNS resolution
-
-### Infrastructure
-
-```text
-Nginx
-PHP-FPM
-MariaDB
-PowerDNS Authoritative
-PowerDNS Recursor
-```
-
----
-
-# 🛠️ Technology Stack
-
-<div align="center">
-
-| Layer | Technology |
+| File | Holds |
 |---|---|
-| Backend | **PHP** |
-| Database | **MariaDB** |
-| Authoritative DNS | **PowerDNS Authoritative** |
-| Resolver | **PowerDNS Recursor** |
-| Web server | **Nginx** |
-| Runtime | **PHP-FPM** |
-| API | **REST API v1** |
-| Frontend | **JavaScript / CSS** |
-| UI | **CoreUI-style interface** |
+| `site.js` | Brand, URLs, nameservers, route list and their meta copy |
+| `plans.js` | Plans, limits, comparison matrix |
+| `records.js` | Record types with zone-file examples |
+| `api.js` | Endpoint list |
+| `schema.js` | JSON-LD graph, built from the above |
 
-</div>
+Change a price in `plans.js` and the pricing page, the comparison table, the
+sitemap and the structured data all follow.
 
----
+### Assets
 
-# 📡 DNS Troubleshooting
+`public/og.png` is a committed 1200x630 social card, regenerated on Windows with
+`scripts/gen-og.ps1`. Fonts are bundled from `@fontsource-variable/*` — there
+are no third-party requests at runtime. Icons are inlined SVG in
+`src/components/icons.js`.
 
-Check your authoritative nameservers:
+## Deploying
 
-```bash
-dig NS example.com
-```
+Pushes to `main` run lint, tests and a build, then deploy `dist/` to GitHub
+Pages behind the custom domain in `public/CNAME`.
 
-Query a specific Intent-DNS nameserver:
+`404.html` must exist and must be the *shell* — not a prerendered page. GitHub
+Pages serves it for any unmatched path, and the client router then renders the
+route the visitor actually asked for.
 
-```bash
-dig @dns1.int.yt example.com
-```
+## Contributing
 
-```bash
-dig @dns2.int.yt example.com
-```
+Issues and pull requests are welcome. For bugs, include the `dig` output or API
+response that reproduces the problem. Never paste passwords, API tokens,
+session cookies or private keys.
 
-Check an individual record:
+## Contact
 
-```bash
-dig A example.com
-dig AAAA example.com
-dig MX example.com
-dig TXT example.com
-```
+- Discord: <https://discord.gg/NCS96PS4MH>
+- Email: admin@int.yt
 
-For ALIAS:
+## License
 
-```bash
-dig example.com
-```
-
-If a nameserver change was made recently, remember that delegation and cached DNS responses can take time to update.
-
----
-
-# 🤝 Contributing
-
-Contributions, bug reports, feature ideas, and infrastructure improvements are welcome.
-
-### Before opening an issue
-
-Please include:
-
-- What you expected
-- What actually happened
-- Relevant DNS output
-- Relevant API response
-- Steps to reproduce
-- Environment information where useful
-
-Never include:
-
-- Passwords
-- API tokens
-- Private keys
-- Session cookies
-- Other credentials
-
----
-
-# 🛡️ Responsible Use
-
-Intent-DNS is intended for legitimate DNS hosting and infrastructure use.
-
-Users are responsible for the domains and records they operate through the service.
-
-Abuse, malicious activity, spam, phishing, or other prohibited activity may result in restrictions or account termination.
-
----
-
-# 📬 Contact
-
-| | |
-|---|---|
-| 🌐 Website | https://dns.int.yt/ |
-| ⚙️ Control Panel | https://panel.dns.int.yt/ |
-| 📧 Email | **admin@int.yt** |
-| 💬 Discord | https://discord.gg/NCS96PS4MH |
-
-**Discord is recommended for faster replies.**
-
----
-
-<div align="center">
-
-## ⭐ Like Intent-DNS?
-
-**Star the repository and help more developers discover it.**
-
-[🌐 Visit Website](https://dns.int.yt/) ·
-[⚙️ Open Control Panel](https://panel.dns.int.yt/) ·
-[💬 Join Discord](https://discord.gg/NCS96PS4MH)
-
-<br>
-
-**Intent-DNS — DNS infrastructure built for developers.**
-
-</div>
-
----
-
-## 📄 License
-
-Add the project's chosen open-source license here once the licensing decision has been made (for example, MIT, Apache-2.0, or GPL-3.0).
-
+[MIT](LICENSE)

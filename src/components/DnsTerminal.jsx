@@ -1,109 +1,193 @@
-import { useEffect, useState, useRef } from 'react'
-
-const SEQUENCE = [
-  { type: 'cmd', text: 'dig yourdomain.int.yt ALIAS +short' },
-  { type: 'out', text: 'flattened → 76.76.21.21', delay: 300 },
-  { type: 'out', text: 'resolved via dns1.int.yt in 8ms', delay: 120, dim: true },
-  { type: 'gap' },
-  { type: 'cmd', text: 'curl api.dns.int.yt/v1/records -H "Authorization: Bearer $KEY"' },
-  { type: 'json', lines: [
-    '{',
-    '  "domain": "yourdomain.int.yt",',
-    '  "records": 847,',
-    '  "limit": 1000,',
-    '  "status": "active",',
-    '  "anycast": ["dns1.int.yt", "dns2.int.yt"]',
-    '}',
-  ]},
-]
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { API_BASE, NAMESERVERS } from '../data/site.js'
+import { RECORDS_RESPONSE_SAMPLE } from '../data/api.js'
 
 const TYPE_SPEED = 22
+const LEAD_IN = 400
+const HOLD_MS = 9000
+
+/**
+ * The sequence is a fixed list; render position is derived from two counters
+ * rather than accumulated into state. That removes the per-character
+ * `prev.map()` over a growing array and the random keys that made React
+ * unmount and rebuild every line on each tick.
+ */
+const SEQUENCE = [
+  { kind: 'cmd', text: `dig +short ${RECORDS_RESPONSE_SAMPLE.domain} A @${NAMESERVERS[0]}` },
+  { kind: 'out', text: ';; apex ALIAS → project.onrender.com.', delay: 420 },
+  { kind: 'out', text: '76.76.21.21', delay: 260, tone: 'accent' },
+  { kind: 'out', text: `;; ANSWER from ${NAMESERVERS[0]} in 8ms`, delay: 120, tone: 'dim' },
+  { kind: 'gap' },
+  {
+    kind: 'cmd',
+    text: `curl ${API_BASE}/domains/$ID/records \\\n    -H "Authorization: Bearer $KEY"`,
+  },
+  {
+    kind: 'json',
+    delay: 260,
+    lines: [
+      '{',
+      `  "domain": "${RECORDS_RESPONSE_SAMPLE.domain}",`,
+      `  "records": ${RECORDS_RESPONSE_SAMPLE.records},`,
+      `  "limit": ${RECORDS_RESPONSE_SAMPLE.limit},`,
+      `  "status": "${RECORDS_RESPONSE_SAMPLE.status}",`,
+      `  "nameservers": [${NAMESERVERS.map((n) => `"${n}"`).join(', ')}]`,
+      '}',
+    ],
+  },
+]
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+/** How many units of a step are revealed: characters for text, lines for JSON. */
+const fullCount = (step) => (step.kind === 'json' ? step.lines.length : (step.text?.length ?? 0))
+
+/** Everything up to `index`, plus a partially revealed version of `index`. */
+function buildLines(index, typed) {
+  const lines = []
+  for (let i = 0; i < index && i < SEQUENCE.length; i++) {
+    lines.push({ key: `s${i}`, step: SEQUENCE[i], count: fullCount(SEQUENCE[i]) })
+  }
+  if (index < SEQUENCE.length) {
+    lines.push({ key: `s${index}`, step: SEQUENCE[index], count: typed })
+  }
+  return lines
+}
 
 export default function DnsTerminal() {
-  const [lines, setLines] = useState([])
-  const [cursorVisible, setCursorVisible] = useState(true)
-  const runningRef = useRef(false)
+  const [index, setIndex] = useState(0)
+  const [typed, setTyped] = useState(0)
+  const [run, setRun] = useState(0)
+  const [inView, setInView] = useState(false)
+  const reduced = useMemo(() => prefersReducedMotion(), [])
+  const ref = useRef(null)
 
+  // Do not animate while off-screen or in a background tab: this loop never
+  // stops on its own, so without the gate it burns a rAF-equivalent every
+  // 22ms for the entire time the visitor is on another tab.
   useEffect(() => {
-    if (runningRef.current) return
-    runningRef.current = true
-
-    let cancelled = false
-    const cursorInterval = setInterval(() => setCursorVisible(v => !v), 500)
-
-    async function run() {
-      while (!cancelled) {
-        setLines([])
-        await sleep(500)
-
-        for (const step of SEQUENCE) {
-          if (cancelled) return
-
-          if (step.type === 'gap') {
-            setLines(prev => [...prev, { type: 'gap', id: Math.random() }])
-            await sleep(400)
-            continue
-          }
-
-          if (step.type === 'cmd') {
-            const id = Math.random()
-            setLines(prev => [...prev, { type: 'cmd', text: '', id }])
-            for (let i = 1; i <= step.text.length; i++) {
-              if (cancelled) return
-              const partial = step.text.slice(0, i)
-              setLines(prev => prev.map(l => l.id === id ? { ...l, text: partial } : l))
-              await sleep(TYPE_SPEED)
-            }
-            await sleep(200)
-            continue
-          }
-
-          if (step.type === 'out') {
-            await sleep(step.delay || 0)
-            setLines(prev => [...prev, { type: 'out', text: step.text, dim: step.dim, id: Math.random() }])
-            continue
-          }
-
-          if (step.type === 'json') {
-            await sleep(250)
-            for (const l of step.lines) {
-              if (cancelled) return
-              setLines(prev => [...prev, { type: 'json', text: l, id: Math.random() }])
-              await sleep(60)
-            }
-            continue
-          }
-        }
-
-        await sleep(3200)
-      }
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setInView(true)
+      return
     }
-
-    run()
-    return () => { cancelled = true; runningRef.current = false; clearInterval(cursorInterval) }
+    const obs = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
+      threshold: 0.25,
+    })
+    obs.observe(el)
+    return () => obs.disconnect()
   }, [])
 
+  useEffect(() => {
+    if (!inView || document.hidden) return
+    if (reduced) {
+      // One render of the finished output, no typing, no replay.
+      setIndex(SEQUENCE.length)
+      setTyped(0)
+      return
+    }
+
+    let cancelled = false
+    setIndex(0)
+    setTyped(0)
+
+    async function play() {
+      await sleep(LEAD_IN)
+      if (cancelled) return
+
+      for (let i = 0; i < SEQUENCE.length; i++) {
+        if (cancelled) return
+        const step = SEQUENCE[i]
+        setIndex(i)
+
+        if (step.kind === 'cmd') {
+          setTyped(0)
+          for (let c = 1; c <= step.text.length; c++) {
+            if (cancelled) return
+            setTyped(c)
+            await sleep(TYPE_SPEED)
+          }
+          await sleep(280)
+          setIndex(i + 1)
+          continue
+        }
+
+        if (step.kind === 'json') {
+          setTyped(0)
+          for (let c = 1; c <= step.lines.length; c++) {
+            if (cancelled) return
+            setTyped(c)
+            await sleep(70)
+          }
+          await sleep(200)
+          setIndex(i + 1)
+          continue
+        }
+
+        await sleep(step.delay ?? 0)
+        if (cancelled) return
+        setIndex(i + 1)
+      }
+
+      await sleep(HOLD_MS)
+      if (!cancelled) setRun((n) => n + 1)
+    }
+
+    play()
+    return () => {
+      cancelled = true
+    }
+  }, [run, inView, reduced])
+
+  useEffect(() => {
+    const onVisible = () => setRun((n) => n + 1)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
+
+  const lines = buildLines(index, typed)
+
   return (
-    <div className="terminal">
-      <div className="terminal__bar">
+    <div className="terminal" ref={ref} role="img" aria-label={LABEL}>
+      <div className="terminal__bar" aria-hidden="true">
         <span className="terminal__dot terminal__dot--red" />
         <span className="terminal__dot terminal__dot--gold" />
         <span className="terminal__dot terminal__dot--green" />
-        <span className="terminal__title">zsh — dns.int.yt</span>
+        <span className="terminal__title">zsh — {NAMESERVERS[0]}</span>
       </div>
-      <div className="terminal__body">
-        {lines.map((l, i) => (
-          <div key={l.id ?? i} className={`terminal__line terminal__line--${l.type}`}>
-            {l.type === 'cmd' && <><span className="terminal__prompt">$</span> {l.text}</>}
-            {l.type === 'out' && <span className={l.dim ? 'terminal__dim' : ''}>{l.text}</span>}
-            {l.type === 'json' && <span className="terminal__json">{l.text}</span>}
-            {l.type === 'gap' && <>&nbsp;</>}
+
+      <div className="terminal__body" aria-hidden="true">
+        {lines.map(({ key, step, count }) => (
+          <div key={key} className={`terminal__line terminal__line--${step.kind}`}>
+            {step.kind === 'cmd' && (
+              <>
+                <span className="terminal__prompt">$</span> {step.text.slice(0, count)}
+              </>
+            )}
+            {step.kind === 'out' && (
+              <span className={step.tone ? `terminal__line--${step.tone}` : undefined}>
+                {step.text}
+              </span>
+            )}
+            {step.kind === 'json' &&
+              step.lines.slice(0, count).map((line) => (
+                <span key={line} className="terminal__json">
+                  {line}
+                </span>
+              ))}
+            {step.kind === 'gap' && <>&nbsp;</>}
           </div>
         ))}
-        <span className={`terminal__cursor ${cursorVisible ? 'is-visible' : ''}`}>▊</span>
+        <span className="terminal__cursor" />
       </div>
     </div>
   )
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
+const LABEL = `Terminal demonstration: a dig query resolving an apex ALIAS record to an IPv4 address in 8 milliseconds, followed by a REST API request returning a zone with 847 of 1,000 records used.`

@@ -1,5 +1,7 @@
 :root {
-  /* === Color === */
+  /* === Color ===
+     --text-faint is used for 13-14px body copy, so it has to clear 4.5:1 on
+     --bg (#000). The old #5c637a sat at ~3.1:1 and failed AA. */
   --bg: #000000;
   --surface: #0a0e14;
   --surface-2: #0f1420;
@@ -8,9 +10,16 @@
   --border-hover: #2a3346;
 
   --blue: #4f6bff;
-  --blue-dim: #3a4fc7;
+  /* Same hue, darkened to clear WCAG AA with white text on top.
+     #4f6bff is only 4.30:1 against white, which fails for anything under
+     18.66px bold — including every .btn--primary and .plan-card__badge.
+     #3d5cff is 5.03:1. Use --blue-solid only where white sits on top. */
+  --blue-solid: #3d5cff;
+  --blue-solid-hover: #2b46e6;
+  --blue-bright: #5c76ff;
   --blue-glow: rgba(79, 107, 255, 0.35);
   --blue-tint: rgba(79, 107, 255, 0.08);
+  --blue-text: #8fa2ff;
 
   --gold: #d4af37;
   --gold-bright: #f0c94c;
@@ -18,15 +27,14 @@
 
   --text: #e8e8ed;
   --text-dim: #9aa2b5;
-  --text-faint: #5c637a;
+  --text-faint: #7f879b;
 
   --green: #3ecf8e;
-  --green-tint: rgba(62, 207, 142, 0.12);
   --red: #ff5c72;
 
   /* === Type === */
-  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-ui: 'Inter Variable', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', monospace;
 
   /* === Radius === */
   --r-sm: 6px;
@@ -34,47 +42,117 @@
   --r-lg: 16px;
 
   /* === Shadow === */
-  --shadow-glow-blue: 0 0 40px -8px var(--blue-glow);
-  --shadow-card: 0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.6);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-card-hover:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 16px 40px -20px rgba(0, 0, 0, 0.8);
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-ui);
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* No overflow-x:hidden — it turns <body> into a scroll container and breaks
+     position:sticky on the nav in some browsers. Nothing should overflow. */
 }
 
-a { color: inherit; text-decoration: none; }
-button { font-family: inherit; cursor: pointer; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
-::selection { background: var(--blue-glow); color: #fff; }
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
 
-::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+code,
+pre {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--blue-glow);
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue-bright);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    /* Delays must go too, or a 240ms stagger still holds content invisible. */
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
 }
 
-:focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 2px;
-  border-radius: 4px;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 200;
+  padding: 10px 16px;
+  background: var(--blue-solid);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  transition: top 0.15s var(--ease);
+}
+.skip-link:focus-visible {
+  top: 16px;
+}
+
+main:focus {
+  outline: none;
 }
 
 .container {
@@ -84,5 +162,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 @media (max-width: 720px) {
-  .container { padding: 0 20px; }
+  .container {
+    padding: 0 20px;
+  }
 }

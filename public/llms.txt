@@ -1,0 +1,41 @@
+# Intent-DNS
+
+> Authoritative DNS hosting with apex ALIAS support and a REST API on every plan. Free tier covers 20 domains with 1,000 records each.
+
+Intent-DNS hosts DNS zones on anycast nameservers. Its distinguishing feature is
+ALIAS: a record type that lets a zone apex point at a hostname, which plain DNS
+forbids because the apex must also carry SOA and NS records.
+
+## Start here
+
+- [Pricing](https://dns.int.yt/pricing): free ($0, 20 domains), paid ($1/mo, 100 domains), unlimited ($4/mo)
+- [DNS record types](https://dns.int.yt/dns-records): A, AAAA, ALIAS, CNAME, MX, TXT, SRV, NS, CAA with zone-file examples
+- [Control panel](https://panel.dns.int.yt/): manage zones and records
+- [REST API reference](https://panel.dns.int.yt/api-docs.php): endpoints and schemas
+
+## Delegation
+
+Point a domain at these nameservers:
+
+- `dns1.int.yt`
+- `dns2.int.yt`
+
+Both resolve to `192.255.149.52`, an anycast address.
+
+## API
+
+Base URL: `https://dns.int.yt/api/v1`
+
+Authenticate with `Authorization: Bearer <token>`.
+
+- `POST /auth/token` — exchange credentials for a token
+- `GET /user` — account and plan limits
+- `GET|POST /domains` — list or create zones
+- `GET|DELETE /domains/{id}` — read or delete a zone
+- `GET|POST /domains/{id}/records` — list or create records
+- `PUT|DELETE /domains/{id}/records/{record_id}` — replace or delete a record
+
+## Contact
+
+- Discord: https://discord.gg/NCS96PS4MH
+- Email: admin@int.yt

@@ -1,137 +1,179 @@
 import { useState } from 'react'
-import Reveal from '../components/Reveal'
-import Seo from '../components/Seo'
-
-const RECORDS = [
-  { type: 'A', name: '@', content: '203.0.113.42', ttl: '3600', desc: 'Maps a hostname directly to an IPv4 address.' },
-  { type: 'AAAA', name: '@', content: '2606:4700::1', ttl: '3600', desc: 'Maps a hostname directly to an IPv6 address.' },
-  { type: 'ALIAS', name: '@', content: 'cname.target.com', ttl: '3600', desc: 'CNAME-like flattening at the zone apex — works where a real CNAME can\'t.' },
-  { type: 'CNAME', name: 'www', content: 'yourdomain.int.yt', ttl: '3600', desc: 'Aliases a subdomain to another hostname.' },
-  { type: 'MX', name: '@', content: '10 mail.provider.com', ttl: '3600', desc: 'Routes inbound email with priority ordering.' },
-  { type: 'TXT', name: '@', content: 'v=spf1 include:_spf... -all', ttl: '3600', desc: 'Free-form text — SPF, DKIM, domain verification.' },
-  { type: 'SRV', name: '_service._tcp', content: '10 5 5060 target.com', ttl: '3600', desc: 'Advertises a service\'s host and port for discovery.' },
-  { type: 'NS', name: 'sub', content: 'ns1.otherprovider.com', ttl: '86400', desc: 'Delegates a subzone to a different set of nameservers.' },
-  { type: 'CAA', name: '@', content: '0 issue "letsencrypt.org"', ttl: '3600', desc: 'Restricts which certificate authorities may issue for your domain.' },
-]
+import Seo from '../components/Seo.jsx'
+import Icon from '../components/Icon.jsx'
+import { useReveal } from '../hooks/useReveal.js'
+import { NAMESERVERS, SIGNUP_URL } from '../data/site.js'
+import { RECORDS, ALIAS_CONFLICTS, ALIAS_COEXIST, recordCount } from '../data/records.js'
+import { formatRecords, FREE_RECORDS_PER_DOMAIN } from '../data/plans.js'
 
 export default function DnsRecords() {
-  const [active, setActive] = useState(RECORDS[2]) // ALIAS by default — the headline feature
+  const [active, setActive] = useState(RECORDS.find((r) => r.highlight))
+  const [nsRef, nsRevealed] = useReveal()
 
   return (
     <>
-      <Seo
-        title="DNS Records — A, AAAA, ALIAS, CNAME, MX, TXT, SRV, NS, CAA"
-        description="Every DNS record type explained with live examples: A, AAAA, CNAME, ALIAS (apex flattening), MX, TXT, SRV, NS, and CAA. 1,000 records per domain, free."
-        keywords="DNS record types, ALIAS record, A record, CNAME record, MX record, TXT record, SRV record, CAA record"
-        path="/dns-records"
-      />
+      <Seo path="/dns-records" />
+
       <section className="page-hero">
         <div className="container">
-          <Reveal>
-            <div className="pill pill--gold"><i className="fa-solid fa-layer-group" /> 1,000 records per domain</div>
-            <h1>Full record type support, no exceptions</h1>
-            <p className="page-hero__sub">
-              Click a record type to see how it looks in a real zone file. Everything here
-              is available on the free plan.
-            </p>
-          </Reveal>
+          <div className="pill pill--gold">
+            <Icon name="layer-group" size={12} /> {recordCount} record types
+          </div>
+          <h1>What each record actually looks like</h1>
+          <p className="page-hero__sub">
+            Pick a type to see a real zone-file line and what it does. All of them are available on
+            the free plan.
+          </p>
         </div>
       </section>
 
       <section className="section--tight">
         <div className="container">
-          <div className="records-explorer">
-            <div className="records-explorer__list">
-              {RECORDS.map(r => (
+          <div
+            className="records-explorer"
+            role="tablist"
+            aria-label="DNS record types"
+            aria-orientation="vertical"
+          >
+            <div className="records-explorer__list" role="presentation">
+              {RECORDS.map((r) => (
                 <button
                   key={r.type}
+                  type="button"
+                  role="tab"
+                  id={`tab-${r.type}`}
+                  aria-selected={active.type === r.type}
+                  aria-controls={`panel-${r.type}`}
+                  tabIndex={active.type === r.type ? 0 : -1}
                   className={`records-explorer__item ${active.type === r.type ? 'is-active' : ''}`}
                   onClick={() => setActive(r)}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+                    e.preventDefault()
+                    const i = RECORDS.indexOf(active)
+                    const next =
+                      RECORDS[
+                        (i + (e.key === 'ArrowDown' ? 1 : -1) + RECORDS.length) % RECORDS.length
+                      ]
+                    setActive(next)
+                    document.getElementById(`tab-${next.type}`)?.focus()
+                  }}
                 >
-                  <span className={`record-chip__type ${r.type === 'ALIAS' ? 'is-highlight' : ''}`}>{r.type}</span>
-                  <span>{r.desc}</span>
+                  <span className={`record-chip__type ${r.highlight ? 'is-highlight' : ''}`}>
+                    {r.type}
+                  </span>
+                  <span>{r.summary}</span>
                 </button>
               ))}
             </div>
 
-            <div className="records-explorer__preview card">
+            <div
+              key={active.type}
+              role="tabpanel"
+              id={`panel-${active.type}`}
+              aria-labelledby={`tab-${active.type}`}
+              className="records-explorer__preview card"
+              tabIndex={0}
+            >
               <div className="records-explorer__preview-head">
-                <span className={`record-chip__type ${active.type === 'ALIAS' ? 'is-highlight' : ''}`}>{active.type}</span>
-                <span className="pill pill--green"><span className="pill-dot" /> Active</span>
+                <span className={`record-chip__type ${active.highlight ? 'is-highlight' : ''}`}>
+                  {active.type}
+                </span>
+                <span className="zone-ttl">TTL {active.ttl}</span>
               </div>
-              <table className="zone-table">
-                <thead>
-                  <tr><th>Name</th><th>Type</th><th>Content</th><th>TTL</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="zone-mono">{active.name}</td>
-                    <td className="zone-mono">{active.type}</td>
-                    <td className="zone-mono zone-mono--content">{active.content}</td>
-                    <td className="zone-mono">{active.ttl}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <p className="records-explorer__desc">{active.desc}</p>
+
+              <pre className="zone-file">
+                <span className="zone-file__name">{active.name}</span>
+                <span className="zone-file__type">{active.type}</span>
+                <span className="zone-file__content">{active.content}</span>
+              </pre>
+
+              <p className="records-explorer__desc">{active.detail}</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== Anycast infra ===== */}
-      <section className="section">
+      {/* ALIAS coexistence rules — the part that surprises people. */}
+      <section className="section--tight">
         <div className="container">
-          <Reveal>
-            <div className="section-head">
-              <h2>Backed by anycast nameservers</h2>
-              <p>Two nameservers, one authoritative engine, answering from wherever's closest.</p>
+          <div className="alias-rules">
+            <div className="alias-rules__col">
+              <h2>
+                <Icon name="xmark" size={14} /> Rejected next to ALIAS
+              </h2>
+              <ul>
+                {ALIAS_CONFLICTS.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+              <p>
+                Two address records at one name is ambiguous, and a CNAME there would make the zone
+                self-referential. Both are refused at validation.
+              </p>
             </div>
-          </Reveal>
+            <div className="alias-rules__col">
+              <h2>
+                <Icon name="check" size={14} /> Allowed next to ALIAS
+              </h2>
+              <ul>
+                {ALIAS_COEXIST.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+              <p>
+                These describe something other than the address at that name, so an ALIAS alongside
+                them is unambiguous and is accepted.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          <div className="ns-grid">
-            <Reveal>
-              <div className="ns-card card">
-                <div className="ns-card__dot" />
-                <h3>dns1.int.yt</h3>
-                <p>Primary anycast nameserver</p>
-                <span className="pill pill--green"><span className="pill-dot" /> Online</span>
-              </div>
-            </Reveal>
-            <Reveal delay={80}>
-              <div className="ns-card card">
-                <div className="ns-card__dot" />
-                <h3>dns2.int.yt</h3>
-                <p>Secondary anycast nameserver</p>
-                <span className="pill pill--green"><span className="pill-dot" /> Online</span>
-              </div>
-            </Reveal>
+      <section ref={nsRef} className={`section reveal-group ${nsRevealed ? 'is-revealed' : ''}`}>
+        <div className="container">
+          <div className="section-head">
+            <h2>Delegate to these two</h2>
+            <p>
+              Both names resolve to the same anycast address, so a query is answered by whichever
+              network reaches it first rather than by one far-away origin. You can confirm that
+              yourself:
+            </p>
           </div>
 
-          <Reveal>
-            <div className="stack-note card">
-              <i className="fa-solid fa-microchip" />
-              <div>
-                <strong>Running PowerDNS v5.1.4</strong> for authoritative answers, with
-                <strong> Recursor v4.9.3</strong> handling ALIAS flattening and recursive lookups.
+          <pre className="ns-verify">
+            {`dig +short ${NAMESERVERS[0]} @1.1.1.1
+dig +short ${NAMESERVERS[1]} @1.1.1.1`}
+          </pre>
+
+          <div className="ns-grid">
+            {NAMESERVERS.map((ns, i) => (
+              <div key={ns} className="ns-card card">
+                <h3>{ns}</h3>
+                <p>{i === 0 ? 'First name in the delegation' : 'Second name in the delegation'}</p>
+                <span className="pill pill--blue">
+                  <span className="pill-dot" /> anycast
+                </span>
               </div>
-            </div>
-          </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className="section final-cta">
         <div className="container">
-          <Reveal>
-            <div className="final-cta__inner">
-              <h2>Set up your first zone</h2>
-              <p>20 free domains, 1,000 records each. Point your nameservers and you're live.</p>
-              <div className="final-cta__buttons">
-                <a href="https://panel.dns.int.yt/?page=signup" className="btn btn--primary btn--lg">
-                  <i className="fa-solid fa-bolt" /> Start for free
-                </a>
-              </div>
+          <div className="final-cta__inner">
+            <h2>Publish these records on your own zone</h2>
+            <p>
+              {formatRecords(FREE_RECORDS_PER_DOMAIN).toLowerCase()}, free. Point your nameservers
+              at {NAMESERVERS[0]} and {NAMESERVERS[1]} and you are authoritative.
+            </p>
+            <div className="final-cta__buttons">
+              <a href={SIGNUP_URL} className="btn btn--primary btn--lg">
+                <Icon name="bolt" size={14} /> Start for free
+              </a>
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
     </>

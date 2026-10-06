@@ -2,36 +2,75 @@
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 11px 20px;
   border-radius: var(--r-sm);
   font-size: 14.5px;
   font-weight: 600;
   border: 1px solid transparent;
-  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease), background 0.15s, border-color 0.15s;
+  transition:
+    transform 0.15s var(--ease),
+    box-shadow 0.15s var(--ease),
+    background 0.15s,
+    border-color 0.15s;
   white-space: nowrap;
 }
-.btn--sm { padding: 8px 16px; font-size: 13.5px; }
-.btn--primary {
-  background: var(--blue);
-  color: #fff;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 4px 20px -6px var(--blue-glow);
+.btn--sm {
+  padding: 8px 16px;
+  font-size: 13.5px;
 }
-.btn--primary:hover { transform: translateY(-1px); box-shadow: 0 1px 0 rgba(255,255,255,0.2) inset, 0 8px 28px -6px var(--blue-glow); background: #5c76ff; }
+.btn--primary {
+  background: var(--blue-solid);
+  color: #fff;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.15) inset,
+    0 4px 20px -6px var(--blue-glow);
+}
+.btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 8px 28px -6px var(--blue-glow);
+  /* Darker, not lighter: a lighter blue would push white text further under
+     the contrast floor at exactly the moment the pointer is on it. */
+  background: var(--blue-solid-hover);
+}
 .btn--ghost {
   background: transparent;
   border-color: var(--border);
   color: var(--text);
 }
-.btn--ghost:hover { border-color: var(--border-hover); background: var(--surface-hover); }
-.btn--gold {
-  background: linear-gradient(145deg, var(--gold-bright), var(--gold));
-  color: #14100a;
-  box-shadow: 0 4px 20px -6px rgba(212,175,55,0.4);
+.btn--ghost:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-hover);
 }
-.btn--gold:hover { transform: translateY(-1px); box-shadow: 0 8px 28px -6px rgba(212,175,55,0.5); }
-.btn--lg { padding: 14px 26px; font-size: 15.5px; }
-.btn--block { width: 100%; justify-content: center; }
+.btn--lg {
+  padding: 14px 26px;
+  font-size: 15.5px;
+}
+.btn--block {
+  width: 100%;
+}
+
+/* ===== Text link ===== */
+.link {
+  color: var(--blue-text);
+  text-decoration: underline;
+  text-decoration-color: rgba(143, 162, 255, 0.4);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s;
+}
+.link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* ===== Icon ===== */
+.icon {
+  display: inline-block;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+}
 
 /* ===== Badge / Pill ===== */
 .pill {
@@ -46,10 +85,23 @@
   background: var(--surface);
   color: var(--text-dim);
 }
-.pill--blue { border-color: rgba(79,107,255,0.35); background: var(--blue-tint); color: #8fa2ff; }
-.pill--gold { border-color: rgba(212,175,55,0.35); background: var(--gold-tint); color: var(--gold-bright); }
-.pill--green { border-color: rgba(62,207,142,0.3); background: var(--green-tint); color: var(--green); }
-.pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill--blue {
+  border-color: rgba(79, 107, 255, 0.35);
+  background: var(--blue-tint);
+  color: var(--blue-text);
+}
+.pill--gold {
+  border-color: rgba(212, 175, 55, 0.35);
+  background: var(--gold-tint);
+  color: var(--gold-bright);
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
 
 /* ===== Card ===== */
 .card {
@@ -57,73 +109,26 @@
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-card);
-  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+  transition:
+    border-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
 }
-.card:hover { border-color: var(--border-hover); }
-
-/* ===== Terminal ===== */
-.terminal {
-  background: #060708;
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset, 0 30px 80px -30px rgba(79,107,255,0.25), 0 40px 100px -40px rgba(0,0,0,0.8);
-  width: 100%;
-}
-.terminal__bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: #0a0c10;
-  border-bottom: 1px solid var(--border);
-}
-.terminal__dot { width: 10px; height: 10px; border-radius: 50%; }
-.terminal__dot--red { background: #ff5f57; }
-.terminal__dot--gold { background: var(--gold); }
-.terminal__dot--green { background: var(--green); }
-.terminal__title {
-  margin-left: 8px;
-  font-size: 12px;
-  color: var(--text-faint);
-  font-family: var(--font-mono);
-}
-.terminal__body {
-  padding: 22px 20px;
-  font-family: var(--font-mono);
-  font-size: 13.5px;
-  line-height: 1.9;
-  min-height: 280px;
-}
-.terminal__line--cmd { color: var(--text); }
-.terminal__prompt { color: var(--blue); }
-.terminal__line--out { color: var(--green); padding-left: 4px; }
-.terminal__dim { color: var(--text-faint); }
-.terminal__line--json { color: #8fa2ff; padding-left: 4px; }
-.terminal__json { white-space: pre; }
-.terminal__cursor {
-  color: var(--blue);
-  opacity: 0;
-  transition: opacity 0.1s;
-}
-.terminal__cursor.is-visible { opacity: 1; }
-
-/* ===== Reveal ===== */
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* ===== Section scaffolding ===== */
-.section { padding: 100px 0; }
-.section--tight { padding: 64px 0; }
-.eyebrow-free { color: var(--text-faint); font-size: 14px; margin: 0 0 12px; }
-.section-head { max-width: 640px; margin-bottom: 52px; }
+.section {
+  padding: 96px 0;
+}
+.section--tight {
+  padding: 64px 0;
+}
+.section-head {
+  max-width: 640px;
+  margin-bottom: 52px;
+}
 .section-head h2 {
   font-size: clamp(28px, 3.6vw, 40px);
   line-height: 1.15;
@@ -137,19 +142,199 @@
   margin: 0;
 }
 
-/* ===== Code block ===== */
-.code-block {
+/* ===== Reveal-on-scroll =====
+   Driven by useReveal(): the page owns the container, this only styles the
+   children. No wrapper element, so grid and flex slots stay intact. */
+.reveal-group > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.55s var(--ease),
+    transform 0.55s var(--ease);
+}
+.reveal-group.is-revealed > * {
+  opacity: 1;
+  transform: none;
+}
+.reveal-group.is-revealed > :nth-child(1) {
+  transition-delay: 0ms;
+}
+.reveal-group.is-revealed > :nth-child(2) {
+  transition-delay: 60ms;
+}
+.reveal-group.is-revealed > :nth-child(3) {
+  transition-delay: 120ms;
+}
+.reveal-group.is-revealed > :nth-child(4) {
+  transition-delay: 180ms;
+}
+.reveal-group.is-revealed > :nth-child(5) {
+  transition-delay: 240ms;
+}
+.reveal-group.is-revealed > :nth-child(6) {
+  transition-delay: 300ms;
+}
+.reveal-group.is-revealed > :nth-child(7) {
+  transition-delay: 360ms;
+}
+.reveal-group.is-revealed > :nth-child(8) {
+  transition-delay: 420ms;
+}
+.reveal-group.is-revealed > :nth-child(9) {
+  transition-delay: 480ms;
+}
+
+/* ===== Terminal ===== */
+.terminal {
   background: #060708;
   border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 18px 20px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+    0 30px 80px -30px rgba(79, 107, 255, 0.25),
+    0 40px 100px -40px rgba(0, 0, 0, 0.8);
+  width: 100%;
+}
+.terminal__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #0a0c10;
+  border-bottom: 1px solid var(--border);
+}
+.terminal__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.terminal__dot--red {
+  background: #ff5f57;
+}
+.terminal__dot--gold {
+  background: var(--gold);
+}
+.terminal__dot--green {
+  background: var(--green);
+}
+.terminal__title {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+.terminal__body {
+  padding: 22px 20px;
   font-family: var(--font-mono);
   font-size: 13px;
-  line-height: 1.8;
+  line-height: 1.9;
+  min-height: 288px;
   overflow-x: auto;
-  color: #c9cdda;
 }
-.code-block .tok-key { color: #8fa2ff; }
-.code-block .tok-str { color: var(--green); }
-.code-block .tok-com { color: var(--text-faint); }
-.code-block .tok-method { color: var(--gold-bright); font-weight: 600; }
+.terminal__line {
+  white-space: pre;
+}
+.terminal__line--cmd {
+  color: var(--text);
+}
+.terminal__prompt {
+  color: var(--blue);
+}
+.terminal__line--out {
+  color: var(--green);
+  padding-left: 4px;
+}
+.terminal__line--accent {
+  color: var(--text);
+  font-weight: 700;
+}
+.terminal__line--dim {
+  color: var(--text-faint);
+}
+.terminal__line--json {
+  color: var(--blue-text);
+  padding-left: 4px;
+}
+.terminal__json {
+  display: block;
+}
+/* CSS-driven blink: costs nothing, stops with reduced-motion, no interval. */
+.terminal__cursor {
+  display: inline-block;
+  color: var(--blue);
+  animation: blink 1.06s steps(1) infinite;
+}
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ===== Error / 404 ===== */
+.error-panel {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 56px 44px;
+  text-align: center;
+}
+.error-panel h1 {
+  font-size: clamp(24px, 3.4vw, 32px);
+  letter-spacing: -0.02em;
+  margin: 0 0 14px;
+}
+.error-panel p {
+  color: var(--text-dim);
+  line-height: 1.65;
+  margin: 0 0 26px;
+}
+.error-panel__cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.not-found {
+  padding: 120px 0 60px;
+}
+.not-found__code {
+  font-family: var(--font-mono);
+  font-size: 52px;
+  font-weight: 700;
+  color: var(--gold);
+  margin: 0 0 8px;
+}
+.not-found__links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  max-width: 320px;
+  margin-inline: auto;
+}
+.not-found__links a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  color: var(--text-dim);
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.not-found__links a:hover {
+  border-color: var(--blue);
+  color: var(--text);
+}

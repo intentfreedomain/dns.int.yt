@@ -1,33 +1,42 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
-import Nav from './components/Nav'
-import Footer from './components/Footer'
-import Home from './pages/Home'
-import Pricing from './pages/Pricing'
-import Docs from './pages/Docs'
-import DnsRecords from './pages/DnsRecords'
+import Nav from './components/Nav.jsx'
+import Footer from './components/Footer.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
+import Home from './pages/Home.jsx'
+import Pricing from './pages/Pricing.jsx'
+import DnsRecords from './pages/DnsRecords.jsx'
+import NotFound from './pages/NotFound.jsx'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
   return null
 }
 
 export default function App() {
   return (
     <>
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <ScrollToTop />
-      <div className="bg-grid" />
-      <Nav />
-      <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/docs" element={<Docs />} />
-          <Route path="/dns-records" element={<DnsRecords />} />
-        </Routes>
-      </main>
-      <Footer />
+      <div className="bg-grid" aria-hidden="true" />
+
+      <ErrorBoundary>
+        <Nav />
+        <main id="main" tabIndex={-1}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/dns-records" element={<DnsRecords />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+        <Footer />
+      </ErrorBoundary>
     </>
   )
 }

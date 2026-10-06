@@ -1,44 +1,48 @@
 import { useEffect } from 'react'
+import { ROUTES, SITE_URL, pageTitle } from '../data/site.js'
 
-const SITE_NAME = 'Intent-DNS'
-const SITE_URL = 'https://dns.int.yt'
-const DEFAULT_IMAGE = `${SITE_URL}/favicon.png`
+const OG_IMAGE = `${SITE_URL}/og.png`
 
 /**
- * Sets document title + meta tags for the current page. Runs client-side
- * (this is a Vite SPA, not SSR), so search engines that execute JS will
- * pick these up on render; crawlers that don't render JS fall back to
- * whatever is in index.html's <head>, which mirrors the homepage's tags.
+ * Per-page document metadata.
+ *
+ * Pages pass only the path: title and description come from ROUTES, the same
+ * table scripts/prerender.mjs writes into the static HTML at build time. The
+ * three real routes used to pass their own strings here, and all three had
+ * drifted from what the crawler reads — hydration would silently rewrite the
+ * head with different copy. Deriving both from one table makes that impossible.
+ *
+ * `title` and `description` are overrides for documents that have no ROUTES
+ * entry: only the 404 page uses them, because it renders for any URL. Real
+ * routes must not pass them, or the head splits back into two sources.
+ *
+ * The component still matters after the build: it keeps <title>, description
+ * and canonical correct across soft client-side navigations, where no
+ * prerendered document is loaded.
  */
-export default function Seo({ title, description, path = '/', keywords }) {
+export default function Seo({ path = '/', title, description }) {
+  const route = ROUTES.find((r) => r.path === path)
+  const fullTitle = pageTitle(title ?? route?.title)
+  const content = description ?? route?.description
+
   useEffect(() => {
-    const fullTitle = title ? `${title} · ${SITE_NAME}` : `${SITE_NAME} — Enterprise Anycast DNS, Free`
     document.title = fullTitle
 
-    setMeta('description', description)
-    setMeta('keywords', keywords)
+    setMeta('description', content)
 
     setMeta('og:title', fullTitle, 'property')
-    setMeta('og:description', description, 'property')
+    setMeta('og:description', content, 'property')
     setMeta('og:url', `${SITE_URL}${path}`, 'property')
-    setMeta('og:type', 'website', 'property')
-    setMeta('og:site_name', SITE_NAME, 'property')
-    setMeta('og:image', DEFAULT_IMAGE, 'property')
-
-    setMeta('twitter:card', 'summary_large_image')
-    setMeta('twitter:title', fullTitle)
-    setMeta('twitter:description', description)
-    setMeta('twitter:image', DEFAULT_IMAGE)
 
     setCanonical(`${SITE_URL}${path}`)
-  }, [title, description, path, keywords])
+  }, [fullTitle, content, path])
 
   return null
 }
 
 function setMeta(name, content, attr = 'name') {
   if (!content) return
-  let el = document.querySelector(`meta[${attr}="${name}"]`)
+  let el = document.head.querySelector(`meta[${attr}="${name}"]`)
   if (!el) {
     el = document.createElement('meta')
     el.setAttribute(attr, name)
@@ -48,7 +52,7 @@ function setMeta(name, content, attr = 'name') {
 }
 
 function setCanonical(url) {
-  let el = document.querySelector('link[rel="canonical"]')
+  let el = document.head.querySelector('link[rel="canonical"]')
   if (!el) {
     el = document.createElement('link')
     el.setAttribute('rel', 'canonical')
@@ -56,3 +60,5 @@ function setCanonical(url) {
   }
   el.setAttribute('href', url)
 }
+
+export { OG_IMAGE }

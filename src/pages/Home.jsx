@@ -1,91 +1,88 @@
 import { Link } from 'react-router-dom'
-import DnsTerminal from '../components/DnsTerminal'
-import Counter from '../components/Counter'
-import Reveal from '../components/Reveal'
-import Seo from '../components/Seo'
-
-const RECORD_TYPES = [
-  { type: 'A', desc: 'Point a hostname to an IPv4 address' },
-  { type: 'AAAA', desc: 'Point a hostname to an IPv6 address' },
-  { type: 'CNAME', desc: 'Alias one hostname to another' },
-  { type: 'ALIAS', desc: 'CNAME flattening at the zone apex — root domains that just work' },
-  { type: 'MX', desc: 'Route mail for your domain' },
-  { type: 'TXT', desc: 'Verification, SPF, DMARC, and arbitrary text' },
-  { type: 'SRV', desc: 'Service discovery records' },
-  { type: 'NS', desc: 'Delegate subzones to other nameservers' },
-  { type: 'CAA', desc: 'Restrict which CAs can issue certs for your domain' },
-]
+import DnsTerminal from '../components/DnsTerminal.jsx'
+import Seo from '../components/Seo.jsx'
+import Icon from '../components/Icon.jsx'
+import { useReveal } from '../hooks/useReveal.js'
+import { DISCORD_URL, SIGNUP_URL, NAMESERVERS } from '../data/site.js'
+import { RECORDS, recordCount } from '../data/records.js'
+import { FREE_RECORDS_PER_DOMAIN, formatRecords } from '../data/plans.js'
 
 const FEATURES = [
   {
-    icon: 'fa-layer-group',
-    title: '1,000 records per domain',
-    body: 'Every plan — including free — ships with 5x the record headroom of most managed DNS providers.',
+    icon: 'link',
+    title: 'ALIAS at the apex',
+    body: 'A CNAME cannot sit at a zone apex, because the apex also carries SOA and NS. ALIAS can — point your root domain at any hostname and it resolves like an A record.',
   },
   {
-    icon: 'fa-shuffle',
-    title: 'ALIAS flattening at the apex',
-    body: 'Point your root domain at anything, not just an IP. Recursor-side flattening means it resolves like an A record.',
-  },
-  {
-    icon: 'fa-code',
+    icon: 'code',
     title: 'Full REST API',
-    body: 'Every action in the dashboard has an API equivalent. Automate zone creation, record edits, and lookups.',
+    body: 'Every dashboard action has an API equivalent. Create zones, edit records, read your limits — all on every plan, free included.',
   },
   {
-    icon: 'fa-diagram-project',
-    title: 'Anycast nameserver pair',
-    body: 'dns1.int.yt and dns2.int.yt answer from the nearest edge, so lookups resolve fast wherever your users are.',
+    icon: 'layer-group',
+    title: `${formatRecords(FREE_RECORDS_PER_DOMAIN)}`,
+    body: 'The same ceiling on the free plan as on the paid ones. Paid tiers raise the domain count, not the record count.',
   },
   {
-    icon: 'fa-shield-halved',
-    title: 'Built on PowerDNS',
-    body: 'Authoritative server v5.1.4 with Recursor v4.9.3 underneath — the same engine trusted by large-scale operators.',
+    icon: 'globe',
+    title: 'Anycast nameservers',
+    body: `${NAMESERVERS[0]} and ${NAMESERVERS[1]} resolve to one anycast address, so a query is answered from whichever network reaches it first.`,
   },
   {
-    icon: 'fa-heart',
-    title: 'Non-profit, no catch',
-    body: 'Fiscally sponsored by Hack Club, a 501(c)(3). No ads, no data resale, no artificial record caps to force an upgrade.',
+    icon: 'shield-halved',
+    title: 'Nine record types',
+    body: 'A, AAAA, ALIAS, CNAME, MX, TXT, SRV, NS and CAA. Validation rejects the combinations DNS forbids, like ALIAS alongside an A record.',
+  },
+  {
+    icon: 'envelope',
+    title: 'Import an existing zone',
+    body: 'Point us at a domain and DNS discovery finds the records already published there, so you can review and import them instead of retyping.',
   },
 ]
 
 export default function Home() {
+  const [featuresRef, featuresRevealed] = useReveal()
+  const [recordsRef, recordsRevealed] = useReveal()
+  const [intytRef, intytRevealed] = useReveal()
+
   return (
     <>
-      <Seo
-        title="Enterprise Anycast DNS, Free"
-        description="Free authoritative DNS hosting with 1,000 records per domain, ALIAS flattening, and a full REST API. Anycast nameservers on PowerDNS. No credit card required."
-        keywords="free DNS hosting, DNS records, ALIAS record, anycast DNS, PowerDNS, DNS API, free DNS provider"
-        path="/"
-      />
-      {/* ===== Hero ===== */}
+      <Seo path="/" />
+
+      {/* Hero — the offer in the headline, the reason to care right under it. */}
       <section className="hero">
         <div className="container hero__grid">
           <div className="hero__copy">
-            <div className="pill pill--blue">
-              <span className="pill-dot" /> PowerDNS v5.1.4 · Recursor v4.9.3
+            <div className="pill pill--gold">
+              <Icon name="link" size={12} /> Apex ALIAS, on the free plan
             </div>
             <h1>
-              DNS hosting that gives you<br />
-              <span className="hero__gold">1,000 records</span> where others give 200
+              Free authoritative DNS with{' '}
+              <span className="hero__gold">{formatRecords(FREE_RECORDS_PER_DOMAIN)}</span>
             </h1>
             <p className="hero__sub">
-              Intent-DNS is authoritative anycast DNS for developers — ALIAS flattening,
-              a full REST API, and a record ceiling that doesn't force you into a paid tier
-              the moment your zone gets busy. Free forever, no card required.
+              Intent-DNS is anycast DNS for developers — apex ALIAS so your root domain can point at
+              a hostname, a full REST API, and 1,000 records per domain, more than most real zones
+              use. Free forever, no card required.
             </p>
             <div className="hero__cta">
-              <a href="https://panel.dns.int.yt/?page=signup" className="btn btn--primary btn--lg">
-                <i className="fa-solid fa-bolt" /> Start for free — 20 domains
+              <a href={SIGNUP_URL} className="btn btn--primary btn--lg">
+                <Icon name="bolt" size={14} /> Create a free account
               </a>
-              <Link to="/docs" className="btn btn--ghost btn--lg">
-                <i className="fa-solid fa-book" /> Read the API docs
+              <Link to="/dns-records" className="btn btn--ghost btn--lg">
+                <Icon name="book" size={14} /> See every record type
               </Link>
             </div>
             <div className="hero__trust">
-              <span><i className="fa-solid fa-check" /> No credit card</span>
-              <span><i className="fa-solid fa-check" /> dns1 &amp; dns2 anycast</span>
-              <span><i className="fa-solid fa-check" /> 501(c)(3) non-profit</span>
+              <span>
+                <Icon name="check" size={11} /> No credit card
+              </span>
+              <span>
+                <Icon name="check" size={11} /> API on every plan
+              </span>
+              <span>
+                <Icon name="check" size={11} /> {recordCount} record types
+              </span>
             </div>
           </div>
 
@@ -95,154 +92,161 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== Comparison strip ===== */}
+      {/* The constraint that makes ALIAS necessary, stated once and concretely. */}
       <section className="section--tight">
         <div className="container">
-          <Reveal>
-            <div className="compare-strip">
-              <div className="compare-strip__label">
-                <i className="fa-solid fa-scale-balanced" />
-                <span>Record limits, compared</span>
+          <div className="apex-compare card">
+            <div className="apex-compare__col apex-compare__col--blocked">
+              <div className="apex-compare__head">
+                <Icon name="xmark" size={13} /> What you cannot publish
               </div>
-              <div className="compare-strip__bars">
-                <CompareBar name="Cloudflare Free" value={200} max={1000} />
-                <CompareBar name="Most DNS hosts" value={100} max={1000} />
-                <CompareBar name="Intent-DNS Free" value={1000} max={1000} highlight />
-              </div>
+              <pre className="apex-compare__zone">
+                {`@   CNAME   project.onrender.com.
+                 ^ rejected`}
+              </pre>
+              <p>
+                The apex of <code>example.com</code> is already the name in the zone’s SOA and NS
+                records. A CNAME there would make the zone self-referential, so the RFC forbids it
+                outright.
+              </p>
             </div>
-          </Reveal>
+            <div className="apex-compare__col apex-compare__col--ok">
+              <div className="apex-compare__head">
+                <Icon name="check" size={13} /> What you publish instead
+              </div>
+              <pre className="apex-compare__zone">
+                {`@   ALIAS   project.onrender.com.
+@   NS       dns1.int.yt.
+@   SOA     ns1.int.yt. hostmaster.int.yt. 1`}
+              </pre>
+              <p>
+                ALIAS flattens the target into an address answer, so the apex resolves like an A
+                record while SOA and NS stay exactly where they belong.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ===== Stats ===== */}
-      <section className="section--tight">
-        <div className="container stats-row">
-          <Reveal className="stat"><StatItem to={1000} suffix="" label="DNS records per domain, every plan" /></Reveal>
-          <Reveal className="stat" delay={80}><StatItem to={20} suffix="" label="Free domain slots to start" /></Reveal>
-          <Reveal className="stat" delay={160}><StatItem to={2} suffix="" label="Anycast nameservers, dns1 &amp; dns2" /></Reveal>
-          <Reveal className="stat" delay={240}><StatItem to={0} prefix="$" suffix="" label="Cost to get started" /></Reveal>
-        </div>
-      </section>
-
-      {/* ===== Features ===== */}
-      <section className="section">
+      {/* Features */}
+      <section
+        ref={featuresRef}
+        className={`section reveal-group ${featuresRevealed ? 'is-revealed' : ''}`}
+      >
         <div className="container">
-          <Reveal>
-            <div className="section-head">
-              <h2>Everything a production zone needs</h2>
-              <p>No feature walls between free and paid. Every plan gets the same engine, the same API, and the same record types — only the ceilings move.</p>
-            </div>
-          </Reveal>
+          <div className="section-head">
+            <h2>What you get on every plan</h2>
+            <p>
+              Free and paid run the same engine, expose the same API and accept the same record
+              types. Only the number of domains changes.
+            </p>
+          </div>
 
           <div className="feature-grid">
-            {FEATURES.map((f, i) => (
-              <Reveal key={f.title} delay={i * 60}>
-                <div className="feature-card card">
-                  <div className="feature-card__icon"><i className={`fa-solid ${f.icon}`} /></div>
-                  <h3>{f.title}</h3>
-                  <p>{f.body}</p>
+            {FEATURES.map((f) => (
+              <div key={f.title} className="feature-card card">
+                <div className="feature-card__icon">
+                  <Icon name={f.icon} size={17} />
                 </div>
-              </Reveal>
+                <h3>{f.title}</h3>
+                <p>{f.body}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ===== Record types ===== */}
-      <section className="section">
+      {/* Record types */}
+      <section
+        ref={recordsRef}
+        className={`section reveal-group ${recordsRevealed ? 'is-revealed' : ''}`}
+      >
         <div className="container">
-          <Reveal>
-            <div className="section-head">
-              <h2>Every record type you'd expect from an enterprise provider</h2>
-              <p>Including ALIAS — apex-level CNAME flattening most free providers hold back entirely.</p>
-            </div>
-          </Reveal>
+          <div className="section-head">
+            <h2>Every record type, none held back</h2>
+            <p>
+              Nine types, all on the free plan.{' '}
+              <Link to="/dns-records" className="link">
+                See what each one looks like in a real zone
+              </Link>
+              .
+            </p>
+          </div>
 
           <div className="record-grid">
-            {RECORD_TYPES.map((r, i) => (
-              <Reveal key={r.type} delay={i * 35}>
-                <div className="record-chip">
-                  <span className={`record-chip__type ${r.type === 'ALIAS' ? 'is-highlight' : ''}`}>{r.type}</span>
-                  <span className="record-chip__desc">{r.desc}</span>
-                </div>
-              </Reveal>
+            {RECORDS.map((r) => (
+              <div key={r.type} className="record-chip">
+                <span className={`record-chip__type ${r.highlight ? 'is-highlight' : ''}`}>
+                  {r.type}
+                </span>
+                <span className="record-chip__desc">{r.summary}</span>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ===== int.yt integration ===== */}
-      <section className="section">
+      {/* int.yt integration */}
+      <section
+        ref={intytRef}
+        className={`section reveal-group ${intytRevealed ? 'is-revealed' : ''}`}
+      >
         <div className="container">
-          <Reveal>
-            <div className="intyt-banner card">
-              <div className="intyt-banner__copy">
-                <div className="pill pill--gold"><i className="fa-solid fa-link" /> Works with int.yt</div>
-                <h2>Already have a free int.yt subdomain?</h2>
-                <p>
-                  int.yt subdomains and Intent-DNS accounts are separate — your subdomain is
-                  claimed through the int.yt panel, DNS records are managed here. Connecting
-                  the two is one step: point your subdomain's nameservers to{' '}
-                  <code>dns1.int.yt</code> and <code>dns2.int.yt</code>, then manage every
-                  record for it from your Intent-DNS dashboard.
-                </p>
-                <div className="intyt-banner__cta">
-                  <a href="https://int.yt" target="_blank" rel="noreferrer" className="btn btn--ghost">
-                    Get a free int.yt subdomain
-                  </a>
-                  <a href="https://panel.dns.int.yt/?page=signup" className="btn btn--primary">
-                    Create your DNS account
-                  </a>
-                </div>
+          <div className="intyt-banner card">
+            <div className="intyt-banner__copy">
+              <div className="pill pill--blue">
+                <Icon name="globe" size={12} /> Works with int.yt
+              </div>
+              <h2>Already have an int.yt subdomain?</h2>
+              <p>
+                The subdomain and the DNS account are separate — you claim the name in the int.yt
+                panel, then manage its records here. Delegating takes one step: point the
+                subdomain’s nameservers at <code>{NAMESERVERS[0]}</code> and{' '}
+                <code>{NAMESERVERS[1]}</code>.
+              </p>
+              <div className="intyt-banner__cta">
+                <a
+                  href="https://int.yt"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn--ghost"
+                >
+                  Get a free int.yt subdomain
+                </a>
+                <a href={SIGNUP_URL} className="btn btn--primary">
+                  Create your DNS account
+                </a>
               </div>
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* ===== Final CTA ===== */}
+      {/* Final CTA — the last of four, not the seventh. */}
       <section className="section final-cta">
         <div className="container">
-          <Reveal>
-            <div className="final-cta__inner">
-              <h2>Point your domain at something that scales with you</h2>
-              <p>Free plan gives you 20 domains and 1,000 records each. No trial period, no downgrade trap.</p>
-              <div className="final-cta__buttons">
-                <a href="https://panel.dns.int.yt/?page=signup" className="btn btn--primary btn--lg">
-                  <i className="fa-solid fa-rocket" /> Create your free account
-                </a>
-                <a href="https://discord.gg/SZEYNP4qBc" target="_blank" rel="noreferrer" className="btn btn--ghost btn--lg">
-                  <i className="fa-brands fa-discord" /> Join the Discord
-                </a>
-              </div>
+          <div className="final-cta__inner">
+            <h2>Delegate two nameservers and you are authoritative</h2>
+            <p>
+              {formatRecords(FREE_RECORDS_PER_DOMAIN).toLowerCase()} on every plan, API included. No
+              trial, no card, no downgrade trap.
+            </p>
+            <div className="final-cta__buttons">
+              <a href={SIGNUP_URL} className="btn btn--primary btn--lg">
+                <Icon name="rocket" size={14} /> Create your free account
+              </a>
+              <a
+                href={DISCORD_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn--ghost btn--lg"
+              >
+                <Icon name="discord" size={14} /> Ask a question on Discord
+              </a>
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
     </>
-  )
-}
-
-function StatItem({ to, prefix, suffix, label }) {
-  return (
-    <div>
-      <div className="stat__num"><Counter to={to} prefix={prefix} suffix={suffix} /></div>
-      <div className="stat__label" dangerouslySetInnerHTML={{ __html: label }} />
-    </div>
-  )
-}
-
-function CompareBar({ name, value, max, highlight }) {
-  const pct = (value / max) * 100
-  return (
-    <div className={`compare-bar ${highlight ? 'is-highlight' : ''}`}>
-      <div className="compare-bar__head">
-        <span>{name}</span>
-        <span className="compare-bar__value">{value.toLocaleString()} records</span>
-      </div>
-      <div className="compare-bar__track">
-        <div className="compare-bar__fill" style={{ width: `${pct}%` }} />
-      </div>
-    </div>
   )
 }

@@ -2,75 +2,66 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Primary meta — this is the fallback for crawlers that don't run JS.
-         Per-page <Seo> component overrides these client-side on navigation. -->
-    <title>Intent™ DNS — Free DNS</title>
-    <meta name="description" content="Free authoritative DNS hosting with 1,000 records per domain, ALIAS flattening, and a full REST API. Anycast nameservers on PowerDNS. No credit card required." />
-    <meta name="keywords" content="free DNS hosting, DNS records, ALIAS record, anycast DNS, PowerDNS, DNS API, free DNS provider" />
+    <!--
+      These static tags are the homepage's, and the strings below must stay
+      identical to HOME.title / HOME.description in src/data/site.js.
+      tests/seo.test.js fails the suite if they drift, and scripts/prerender.mjs
+      overwrites them per route with the same source. Do not hand-edit the
+      wording here without changing the constant.
+    -->
+    <title>Free authoritative DNS with 1,000 records per domain · Intent-DNS</title>
+    <meta
+      name="description"
+      content="Free authoritative DNS with 1,000 records per domain, plus apex ALIAS so your root domain can point at a hostname. Full REST API on every plan, 20 free domains, no credit card required."
+    />
     <link rel="canonical" href="https://dns.int.yt/" />
 
-    <!-- Open Graph -->
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="theme-color" content="#000000" />
+
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Intent™ DNS" />
-    <meta property="og:title" content="Intent™-DNS — Free DNS" />
-    <meta property="og:description" content="Free authoritative DNS hosting with 1,000 records per domain, ALIAS flattening, and a full REST API." />
+    <meta property="og:site_name" content="Intent-DNS" />
+    <meta
+      property="og:title"
+      content="Free authoritative DNS with 1,000 records per domain · Intent-DNS"
+    />
+    <meta
+      property="og:description"
+      content="Free authoritative DNS with 1,000 records per domain, plus apex ALIAS so your root domain can point at a hostname."
+    />
     <meta property="og:url" content="https://dns.int.yt/" />
-    <meta property="og:image" content="https://dns.int.yt/favicon.png" />
+    <meta property="og:image" content="https://dns.int.yt/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Intent-DNS — Free authoritative DNS with 1,000 records per domain"
+    />
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Intent™ DNS  — Free DNS" />
-    <meta name="twitter:description" content="Free authoritative DNS hosting with 1,000 records per domain, ALIAS flattening, and a full REST API." />
-    <meta name="twitter:image" content="https://dns.int.yt/favicon.png" />
+    <meta
+      name="twitter:title"
+      content="Free authoritative DNS with 1,000 records per domain · Intent-DNS"
+    />
+    <meta
+      name="twitter:description"
+      content="Free authoritative DNS with 1,000 records per domain, plus apex ALIAS so your root domain can point at a hostname."
+    />
+    <meta name="twitter:image" content="https://dns.int.yt/og.png" />
+    <meta
+      name="twitter:image:alt"
+      content="Intent-DNS — Free authoritative DNS with 1,000 records per domain"
+    />
 
-    <!-- Structured data — helps Google understand this as a software product / org -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Intent™ DNS ",
-      "url": "https://dns.int.yt",
-      "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Any",
-      "description": "Authoritative anycast DNS hosting with ALIAS flattening, a full REST API, and up to 1,000 DNS records per domain, free forever.",
-      "offers": [
-        {
-          "@type": "Offer",
-          "name": "Free",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        {
-          "@type": "Offer",
-          "name": "Paid",
-          "price": "1",
-          "priceCurrency": "USD"
-        },
-        {
-          "@type": "Offer",
-          "name": "Unlimited",
-          "price": "4",
-          "priceCurrency": "USD"
-        }
-      ],
-      "publisher": {
-        "@type": "Organization",
-        "name": "Intent",
-        "url": "https://int.yt"
-      }
-    }
-    </script>
+    <!-- JSON-LD is injected at build time by scripts/prerender.mjs from
+         src/data/schema.js, so it cannot drift from the rendered copy. -->
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script type="module" src="/src/main.jsx"></script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
